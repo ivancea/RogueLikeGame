@@ -3,16 +3,18 @@ package es.hol.ivancea;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+
+import es.hol.ivancea.enemies.BasicEnemy;
 
 public class RogueLikeGame extends JFrame {
 	private static final long serialVersionUID = 1L;
@@ -23,6 +25,7 @@ public class RogueLikeGame extends JFrame {
 	private int[][] map;
 	
 	private Player player;
+	private List<Enemy> enemies;
 	
 	private JPanel panel;
 	
@@ -67,6 +70,7 @@ public class RogueLikeGame extends JFrame {
 						player.x += 1;
 					break;
 				}
+				player.move(null);
 				logic();
 			}
 			@Override
@@ -93,7 +97,10 @@ public class RogueLikeGame extends JFrame {
 	}
 	
 	private void initialiceGame(){
-		player = new Player(20,20);
+		player = new Player(7,7);
+		
+		enemies = new ArrayList<Enemy>();
+		
 		map = new int[WIDTH/20][HEIGHT/20];
 		for(int i=0; i<map.length; i++)
 			for(int j=0; j<map[i].length; j++)
@@ -104,8 +111,12 @@ public class RogueLikeGame extends JFrame {
 					map[i][j] = 1;
 		for(int i=0; i<map.length; i++)
 			for(int j=0; j<map[i].length; j++)
-				if((player.x != i || player.y != j) && Math.random()*5 < 1)
+				if((player.x != i || player.y != j)
+				&& (i==19 || i==20 || j==14 || j==15)
+				&& i!=30 && i!=29 && j!=21 && j!=22 && i!=9 && i!=10 && j!=7 && j!=8)
 					map[i][j] = 1;
+		enemies.add(new BasicEnemy(5,5));
+		map[5][5] = 2;
 	}
 	
 	private void paintScene(Graphics g){
@@ -117,16 +128,18 @@ public class RogueLikeGame extends JFrame {
 					g.setColor(Color.BLACK);
 				g.fillRect(i*20,j*20, 20,20);
 			}
-		player.drawSprite(g);
+		for(int i=0; i<enemies.size(); i++)
+			enemies.get(i).draw(g);
+		player.draw(g);
 	}
 	
 	private void logic(){
-		
+		for(int i=0; i<enemies.size(); i++)
+			enemies.get(i).move(map, player);
 	}
 	
 	/** TODO:
 	 *  -Add enemies (abstract base class, inherited classes with IA)
-	 *  -Add player
 	 *  -Game moves on player move (key listeners, ¿mouse listeners?)
 	 */
 	
