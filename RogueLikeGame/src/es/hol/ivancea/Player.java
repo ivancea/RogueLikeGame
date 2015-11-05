@@ -29,7 +29,7 @@ public class Player {
 			System.err.println("Error loading sprite");
 	}
 	
-	public void move(Direction mov){
+	public void moved(Direction mov){
 		// TODO: Bad implementation, change it. Just for see sprite animation change
 		spriteState = 15;
 	}
@@ -43,7 +43,6 @@ public class Player {
 			}else
 				initialImageX = 0;
 			g.drawImage(sprite, pos.x*20,pos.y*20, (pos.x+1)*20,(pos.y+1)*20, initialImageX,0, initialImageX+20, 20, null);
-			//g.drawImage(sprite, pos.x*20,pos.y*20, (pos.x+1)*20,(pos.y+1)*20, (spriteState/20%2)*20,0, (spriteState/20%2+1)*20, 20, null);
 		}else{
 			g.setColor(Color.BLACK);
 			g.drawRect(pos.x*20,pos.y*20, 19,19);

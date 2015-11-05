@@ -13,26 +13,18 @@ public abstract class Utils {
 		RIGHT
 	}
 	
-	public static boolean canMove(Point pos, MapZone[][] map, Direction dir){
+	public static MapZone canMove(Point pos, MapZone[][] map, Direction dir){
 		switch(dir){
 		case UP:
-			if(map[pos.x][pos.y-1] == MapZone.NONE)
-				return true;
-			break;
+			return map[pos.x][pos.y-1];
 		case DOWN:
-			if(map[pos.x][pos.y+1] == MapZone.NONE)
-				return true;
-			break;
+			return map[pos.x][pos.y+1];
 		case LEFT:
-			if(map[pos.x-1][pos.y] == MapZone.NONE)
-				return true;
-			break;
+			return map[pos.x-1][pos.y];
 		case RIGHT:
-			if(map[pos.x+1][pos.y] == MapZone.NONE)
-				return true;
-			break;
+			return map[pos.x+1][pos.y];
 		}
-		return false;
+		return MapZone.NONE;
 	}
 	
 	public static void move(Point pos, MapZone[][] map, Direction dir, MapZone type){
@@ -54,12 +46,30 @@ public abstract class Utils {
 		map[pos.x][pos.y] = type;
 	}
 	
-	public static boolean tryMove(Point pos, MapZone[][] map, Direction dir, MapZone type){
-		if(canMove(pos, map, dir)){
+	public static MapZone tryMove(Point pos, MapZone[][] map, Direction dir, MapZone type){
+		MapZone t = canMove(pos, map, dir);
+		if(t == MapZone.NONE)
 			move(pos, map, dir, type);
-			return true;
+		return t;
+	}
+	
+	public static Point getNextPos(Point pos, Direction dir){
+		Point t = new Point(pos);
+		switch(dir){
+		case UP:
+			t.y -= 1;
+			break;
+		case DOWN:
+			t.y += 1;
+			break;
+		case LEFT:
+			t.x -= 1;
+			break;
+		case RIGHT:
+			t.x += 1;
+			break;
 		}
-		return false;
+		return t;
 	}
 	
 	

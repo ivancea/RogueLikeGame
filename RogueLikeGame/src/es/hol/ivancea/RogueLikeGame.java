@@ -3,6 +3,7 @@ package es.hol.ivancea;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -16,7 +17,7 @@ import javax.swing.Timer;
 
 import es.hol.ivancea.PlayerActions.ActionType;
 import es.hol.ivancea.Utils.Direction;
-import es.hol.ivancea.enemies.BasicEnemy;
+import es.hol.ivancea.enemies.RandomMoveEnemy;
 
 public class RogueLikeGame extends JFrame {
 	private static final long serialVersionUID = 1L;
@@ -53,7 +54,7 @@ public class RogueLikeGame extends JFrame {
 		this.addKeyListener(new KeyListener(){
 			@Override
 			public void keyPressed(KeyEvent arg) {
-				boolean moved = false;
+				Direction dir = null;
 				switch(arg.getKeyCode()){
 				case KeyEvent.VK_ESCAPE:
 					frame.dispose();
@@ -61,28 +62,40 @@ public class RogueLikeGame extends JFrame {
 					break;
 				case KeyEvent.VK_UP:
 				case KeyEvent.VK_W:
-					if(moved = Utils.tryMove(player.pos,  map, Direction.UP, MapZone.PLAYER))
-						playerActions.add(ActionType.MOVE, Direction.UP);
+					dir = Direction.UP;
 					break;
 				case KeyEvent.VK_DOWN:
 				case KeyEvent.VK_S:
-					if(moved = Utils.tryMove(player.pos,  map, Direction.DOWN, MapZone.PLAYER))
-						playerActions.add(ActionType.MOVE, Direction.DOWN);
+					dir = Direction.DOWN;
 					break;
 				case KeyEvent.VK_LEFT:
 				case KeyEvent.VK_A:
-					if(moved = Utils.tryMove(player.pos,  map, Direction.LEFT, MapZone.PLAYER))
-						playerActions.add(ActionType.MOVE, Direction.LEFT);
+					dir = Direction.LEFT;
 					break;
 				case KeyEvent.VK_RIGHT:
 				case KeyEvent.VK_D:
-					if(moved = Utils.tryMove(player.pos,  map, Direction.RIGHT, MapZone.PLAYER))
-						playerActions.add(ActionType.MOVE, Direction.RIGHT);
+					dir = Direction.RIGHT;
 					break;
 				}
-				if(moved){
-					player.move(null);
-					logic();
+				if(dir != null){
+					switch(Utils.canMove(player.pos, map, dir)){
+					case ENEMY:
+						Point p = Utils.getNextPos(player.pos, dir);
+						for(int i=0; i<enemies.size(); i++){
+							if(enemies.get(i).pos.equals(p)){
+								enemies.remove(i);
+								break;
+							}
+						}
+					case NONE:
+						Utils.move(player.pos, map, dir, MapZone.PLAYER);
+						playerActions.add(ActionType.MOVE, dir);
+						player.moved(null);
+						logic();
+						break;
+					default:
+						break;
+					}
 				}
 			}
 			@Override
@@ -128,14 +141,16 @@ public class RogueLikeGame extends JFrame {
 				&& (i==19 || i==20 || j==14 || j==15)
 				&& i!=30 && i!=29 && j!=21 && j!=22 && i!=9 && i!=10 && j!=7 && j!=8)
 					map[i][j] = MapZone.WALL;
-		enemies.add(new BasicEnemy(5,5));
+		enemies.add(new RandomMoveEnemy(5,5));
 		map[5][5] = MapZone.ENEMY;
-		enemies.add(new BasicEnemy(25,25));
+		enemies.add(new RandomMoveEnemy(25,25));
 		map[25][25] = MapZone.ENEMY;
-		enemies.add(new BasicEnemy(5,25));
+		enemies.add(new RandomMoveEnemy(5,25));
 		map[5][25] = MapZone.ENEMY;
-		enemies.add(new BasicEnemy(25,5));
+		enemies.add(new RandomMoveEnemy(25,5));
 		map[25][5] = MapZone.ENEMY;
+		enemies.add(new RandomMoveEnemy(7,6));
+		map[5][5] = MapZone.ENEMY;
 	}
 	
 	private void paintScene(Graphics g){
@@ -160,13 +175,8 @@ public class RogueLikeGame extends JFrame {
 	
 	private void logic(){
 		for(int i=0; i<enemies.size(); i++)
-			enemies.get(i).move(map, playerActions, player);
+			enemies.get(i).logic(map, playerActions, player);
 	}
-	
-	/** TODO:
-	 *  -Add enemies (abstract base class, inherited classes with IA)
-	 *  -Game moves on player move (key listeners, ¿mouse listeners?)
-	 */
 	
 	public enum MapZone{ // Temporal
 		NONE,
