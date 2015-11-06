@@ -13,12 +13,14 @@ import es.hol.ivancea.Utils.Direction;
 public class Player {
 	
 	public Point pos;
+	public int life;
 	private int spriteState;
 	private Image sprite;
 	
-	public Player(int x, int y){
+	public Player(int x, int y, int initialLife){
 		this.pos = new Point(x,y);
 		this.spriteState = 0;
+		this.life = initialLife;
 		try{
 			this.sprite = ImageIO.read(RogueLikeGame.class.getClassLoader().getResourceAsStream("resources/sprites/player_temp_sprite.png"));
 		}catch(Exception e){

@@ -3,7 +3,6 @@ package es.hol.ivancea;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -15,9 +14,11 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
+import es.hol.ivancea.Enemy.LogicEvent;
 import es.hol.ivancea.PlayerActions.ActionType;
 import es.hol.ivancea.Utils.Direction;
 import es.hol.ivancea.enemies.RandomMoveEnemy;
+import es.hol.ivancea.enemies.TurretEnemy;
 
 public class RogueLikeGame extends JFrame {
 	private static final long serialVersionUID = 1L;
@@ -80,13 +81,14 @@ public class RogueLikeGame extends JFrame {
 				if(dir != null){
 					switch(Utils.canMove(player.pos, map, dir)){
 					case ENEMY:
-						Point p = Utils.getNextPos(player.pos, dir);
+						/*Point p = Utils.getNextPos(player.pos, dir);
 						for(int i=0; i<enemies.size(); i++){
 							if(enemies.get(i).pos.equals(p)){
 								enemies.remove(i);
 								break;
 							}
-						}
+						}*/
+						break;
 					case NONE:
 						Utils.move(player.pos, map, dir, MapZone.PLAYER);
 						playerActions.add(ActionType.MOVE, dir);
@@ -123,7 +125,7 @@ public class RogueLikeGame extends JFrame {
 	
 	private void initialiceGame(){
 		playerActions = new PlayerActions();
-		player = new Player(7,7);
+		player = new Player(7,7, 5);
 		
 		enemies = new ArrayList<Enemy>();
 		
@@ -141,16 +143,24 @@ public class RogueLikeGame extends JFrame {
 				&& (i==19 || i==20 || j==14 || j==15)
 				&& i!=30 && i!=29 && j!=21 && j!=22 && i!=9 && i!=10 && j!=7 && j!=8)
 					map[i][j] = MapZone.WALL;
-		enemies.add(new RandomMoveEnemy(5,5));
-		map[5][5] = MapZone.ENEMY;
-		enemies.add(new RandomMoveEnemy(25,25));
-		map[25][25] = MapZone.ENEMY;
-		enemies.add(new RandomMoveEnemy(5,25));
-		map[5][25] = MapZone.ENEMY;
-		enemies.add(new RandomMoveEnemy(25,5));
-		map[25][5] = MapZone.ENEMY;
-		enemies.add(new RandomMoveEnemy(7,6));
-		map[5][5] = MapZone.ENEMY;
+		addEnemy(new RandomMoveEnemy(5,5));
+		addEnemy(new RandomMoveEnemy(25,5));
+		addEnemy(new TurretEnemy(7,6, Direction.UP, 5));
+		addEnemy(new TurretEnemy(17,6, Direction.LEFT, 2));
+		addEnemy(new TurretEnemy(21,25, Direction.RIGHT, 1));
+		addEnemy(new TurretEnemy(8,20, Direction.DOWN, 0));
+	}
+	
+	private void addEnemy(Enemy enemy, int position){
+		if(position >= enemies.size())
+			enemies.add(enemy);
+		else if(position < 0)
+				enemies.add(0, enemy);
+		else enemies.add(position, enemy);
+		map[enemy.pos.x][enemy.pos.y] = MapZone.ENEMY;
+	}
+	private void addEnemy(Enemy enemy){
+		addEnemy(enemy, enemies.size());
 	}
 	
 	private void paintScene(Graphics g){
@@ -174,8 +184,36 @@ public class RogueLikeGame extends JFrame {
 	}
 	
 	private void logic(){
-		for(int i=0; i<enemies.size(); i++)
-			enemies.get(i).logic(map, playerActions, player);
+		for(int i=0; i<enemies.size(); i++){
+			List<LogicEvent> events = enemies.get(i).logic(map, playerActions, player, enemies);
+			if(events != null){
+				for(int j=0; j<events.size(); j++){
+					LogicEvent ev = events.get(j);
+					switch(ev.type){
+					case DEAD:
+						map[enemies.get(i).pos.x][enemies.get(i).pos.y] = MapZone.NONE;
+						enemies.remove(i);
+						--i;
+						break;
+					case DAMAGE_PLAYER:
+						System.out.println("New player life: " + player.life);
+						break;
+					case DAMAGE_ENEMY:
+						Enemy enemy = (Enemy)ev.data;
+						if(enemy.life <= 0)
+							if(enemies.remove(enemy))
+								--i;
+						break;
+					case ADD_ENEMY:
+						addEnemy((Enemy)ev.data, 0);
+						++i;
+						break;
+					default:
+						break;
+					}
+				}
+			}
+		}
 	}
 	
 	public enum MapZone{ // Temporal
