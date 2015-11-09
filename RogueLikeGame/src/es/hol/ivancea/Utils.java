@@ -2,7 +2,7 @@ package es.hol.ivancea;
 
 import java.awt.Point;
 
-import es.hol.ivancea.RogueLikeGame.MapZone;
+import es.hol.ivancea.GameData.MapZone;
 
 public abstract class Utils {
 	
@@ -13,22 +13,40 @@ public abstract class Utils {
 		RIGHT
 	}
 	
-	public static MapZone canMove(Point pos, MapZone[][] map, Direction dir){
+	public static boolean canMove(Point pos, GameData game, Direction dir){
+		Point nextPos = new Point(pos);
 		switch(dir){
 		case UP:
-			return map[pos.x][pos.y-1];
+			nextPos.y -= 1;
+			break;
 		case DOWN:
-			return map[pos.x][pos.y+1];
+			nextPos.y += 1;
+			break;
 		case LEFT:
-			return map[pos.x-1][pos.y];
+			nextPos.x -= 1;
+			break;
 		case RIGHT:
-			return map[pos.x+1][pos.y];
+			nextPos.x += 1;
+			break;
 		}
-		return MapZone.NONE;
+		boolean found = false;
+		for(int i=0; i<game.enemies.size(); i++)
+			if(nextPos.equals(game.enemies.get(i).pos)){
+				found = true;
+				break;
+			}
+		if(!found)
+			for(int i=0; i<game.entities.size(); i++)
+				if(nextPos.equals(game.entities.get(i).pos)){
+					found = true;
+					break;
+				}
+		
+		return !(game.map[nextPos.x][nextPos.y]!=MapZone.NONE || game.player.pos.equals(nextPos) || found);
 	}
 	
-	public static void move(Point pos, MapZone[][] map, Direction dir, MapZone type){
-		map[pos.x][pos.y] = MapZone.NONE;
+	public static void move(Point pos, GameData game, Direction dir){
+		game.map[pos.x][pos.y] = MapZone.NONE;
 		switch(dir){
 		case UP:
 			pos.y -= 1;
@@ -43,14 +61,14 @@ public abstract class Utils {
 			pos.x += 1;
 			break;
 		}
-		map[pos.x][pos.y] = type;
 	}
 	
-	public static MapZone tryMove(Point pos, MapZone[][] map, Direction dir, MapZone type){
-		MapZone t = canMove(pos, map, dir);
-		if(t == MapZone.NONE)
-			move(pos, map, dir, type);
-		return t;
+	public static boolean tryMove(Point pos, GameData game, Direction dir){
+		if(canMove(pos, game, dir)){
+			move(pos, game, dir);
+			return true;
+		}
+		return false;
 	}
 	
 	public static Point getNextPos(Point pos, Direction dir){

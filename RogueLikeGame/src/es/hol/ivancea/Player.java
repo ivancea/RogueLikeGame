@@ -11,24 +11,25 @@ import es.hol.ivancea.Utils.Direction;
 
 
 public class Player {
+
+	static public Image sprite = null;
 	
 	public Point pos;
 	public int life;
 	private int spriteState;
-	private Image sprite;
 	
 	public Player(int x, int y, int initialLife){
 		this.pos = new Point(x,y);
 		this.spriteState = 0;
 		this.life = initialLife;
-		try{
-			this.sprite = ImageIO.read(RogueLikeGame.class.getClassLoader().getResourceAsStream("resources/sprites/player_temp_sprite.png"));
-		}catch(Exception e){
-			System.err.println(e.getMessage());
-			sprite = null;
+		if(Player.sprite == null){
+			try{
+				Player.sprite = ImageIO.read(RogueLikeGame.class.getClassLoader().getResourceAsStream("resources/sprites/player_temp_sprite.png"));
+			}catch(Exception e){
+				System.err.println(e.getMessage());
+				Player.sprite = null;
+			}
 		}
-		if(this.sprite==null)
-			System.err.println("Error loading sprite");
 	}
 	
 	public void moved(Direction mov){

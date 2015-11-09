@@ -7,9 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import es.hol.ivancea.Enemy;
-import es.hol.ivancea.Player;
-import es.hol.ivancea.PlayerActions;
-import es.hol.ivancea.RogueLikeGame.MapZone;
+import es.hol.ivancea.GameData;
+import es.hol.ivancea.LogicEvent;
 import es.hol.ivancea.Utils;
 import es.hol.ivancea.Utils.Direction;
 
@@ -20,11 +19,11 @@ public class RandomMoveEnemy extends Enemy {
 	}
 	
 	@Override
-	public List<LogicEvent> logic(MapZone[][] map, PlayerActions playerActions, Player player, List<Enemy> enemies){
+	public List<LogicEvent> logic(GameData game){
 		List<LogicEvent> events = new ArrayList<LogicEvent>();
 		int n = (int)(Math.random()*5);
 		if(n<4)
-			Utils.tryMove(this.pos, map, Direction.values()[n], MapZone.ENEMY);
+			Utils.tryMove(this.pos, game, Direction.values()[n]);
 		return events;
 	}
 	
